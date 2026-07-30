@@ -227,12 +227,13 @@
     <!-- Footer -->
     <footer class="py-10 border-t border-neutral-900 text-center text-xs text-neutral-500 flex flex-col items-center gap-2">
       <p>© 2026 Selçuk Oktay. {{ t.footer.rights }}</p>
-      <button @click="openAdminModal" class="text-neutral-500 hover:text-amber-500 transition text-[11px] font-semibold">
-        {{ isAdmin ? '⚙️ Admin Yönetim Panelini Aç' : '🔒 Admin Girişi' }}
+      <!-- Admin Paneli Butonu -->
+      <button @click="openAdminModal" class="text-neutral-600 hover:text-amber-500 transition text-[11px] font-semibold">
+        🔒 {{ isAdmin ? 'Admin Yönetim Paneli (Açık)' : 'Admin Girişi' }}
       </button>
     </footer>
 
-    <!-- GİZLİ ADMİN PANELİ MODAL -->
+    <!-- ADMİN PANELİ MODAL (POPUP) -->
     <div v-if="showAdminModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
       <div class="bg-neutral-900 border border-neutral-800 rounded-2xl max-w-2xl w-full p-6 space-y-6 max-h-[90vh] overflow-y-auto">
         
@@ -316,12 +317,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 const currentLang = ref('en')
 const toggleLanguage = () => { currentLang.value = currentLang.value === 'en' ? 'tr' : 'en' }
 
-const ADMIN_PASSWORD = '1234'
+const ADMIN_PASSWORD = 'ibanezJem7'
 const showAdminModal = ref(false)
 const isAdmin = ref(false)
 const inputPassword = ref('')
@@ -338,10 +339,19 @@ const loginAdmin = () => {
 }
 const logoutAdmin = () => {
   isAdmin.value = false
+  showAdminModal.value = false
   if (process.client) localStorage.removeItem('admin_logged')
 }
 
-// Çeviriler
+// Klavye Kısayolu (ALT + A)
+const handleKeyDown = (event) => {
+  if (event.altKey && (event.key === 'a' || event.key === 'A')) {
+    event.preventDefault()
+    showAdminModal.value = !showAdminModal.value
+  }
+}
+
+// Çeviri Verileri
 const translations = {
   en: {
     nav: { about: 'About', projects: 'Projects', videos: 'Videos', gigs: 'Shows', contact: 'Contact' },
@@ -372,7 +382,6 @@ const defaultVideos = [
   { id: 2, youtubeId: '7t1torWTREc', category: 'Gypsy Jazz', title: { en: 'Gypsy Jazz Trio - Acoustic Swing Session', tr: 'Gypsy Jazz Trio - Akustik Swing Kaydı' } }
 ]
 
-// Ağaç Ev Kadıköy - Haluk BB 10'lu Konser Takvimi
 const defaultGigs = [
   { id: 1, date: { en: 'Saturday, Sep 19', tr: '19 Eylül Cumartesi' }, venue: 'Ağaç Ev Kadıköy', address: 'Osmancık Sk. No:13/B, Kadıköy', project: 'Haluk BB (Rock & Blues)', time: '23:45', link: 'https://agacevbar.com/' },
   { id: 2, date: { en: 'Friday, Oct 16', tr: '16 Ekim Cuma' }, venue: 'Ağaç Ev Kadıköy', address: 'Osmancık Sk. No:13/B, Kadıköy', project: 'Haluk BB (Rock & Blues)', time: '21:00', link: 'https://agacevbar.com/' },
@@ -438,11 +447,18 @@ const saveToStorage = () => {
 
 onMounted(() => {
   if (process.client) {
+    window.addEventListener('keydown', handleKeyDown)
     if (localStorage.getItem('admin_logged') === 'true') isAdmin.value = true
     const savedGigs = localStorage.getItem('custom_gigs')
     const savedVideos = localStorage.getItem('custom_videos')
     if (savedGigs) gigs.value = JSON.parse(savedGigs)
     if (savedVideos) videos.value = JSON.parse(savedVideos)
+  }
+})
+
+onUnmounted(() => {
+  if (process.client) {
+    window.removeEventListener('keydown', handleKeyDown)
   }
 })
 </script>
