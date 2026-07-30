@@ -4,10 +4,29 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Content Manager</title>
-    <!-- Config dosyasının konumunu açıkça belirtiyoruz -->
-    <link rel="cms-config-url" type="text/yaml" href="/admin/config.yml" />
-    <!-- Sveltia CMS Script -->
     <script src="https://unpkg.com/sveltia-cms@latest/dist/sveltia-cms.js" type="module"></script>
   </head>
-  <body></body>
+  <body>
+    <script type="text/yaml">
+      backend:
+        name: github
+        repo: selch9876/selcuk-oktay-website
+        branch: main
+      
+      media_folder: "public/images"
+      public_folder: "/images"
+
+      collections:
+        - name: "events"
+          label: "Konserler & Etkinlikler"
+          folder: "content/events"
+          create: true
+          slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+          fields:
+            - { label: "Başlık", name: "title", widget: "string" }
+            - { label: "Tarih", name: "date", widget: "datetime" }
+            - { label: "Mekan", name: "location", widget: "string" }
+            - { label: "Açıklama", name: "body", widget: "markdown" }
+    </script>
+  </body>
 </html>
