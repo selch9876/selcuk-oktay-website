@@ -2,7 +2,6 @@ backend:
   name: github
   repo: selch9876/selcuk-oktay-website
   branch: main
-  base_url: https://decap-cms-oauth.netlify.app
 
 media_folder: "public/uploads" # Yüklenen görsellerin gideceği yer
 public_folder: "/uploads"
