@@ -4,9 +4,6 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss'],
   nitro: {
-    preset: 'netlify'
-  },
-  routeRules: {
-    '/admin/**': { prerender: false, ssr: false }
+    preset: 'netlify-static'
   }
 })

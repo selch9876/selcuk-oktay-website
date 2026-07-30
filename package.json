@@ -3,12 +3,13 @@
   "type": "module",
   "private": true,
     "scripts": {
-  "build": "nuxt build",
+  "scripts": {
+  "build": "nuxt generate",
   "dev": "nuxt dev",
   "generate": "nuxt generate",
   "preview": "nuxt preview",
   "postinstall": "nuxt prepare"
-},
+}},
   "dependencies": {
     "@nuxtjs/tailwindcss": "^6.14.0",
     "nuxt": "^4.5.1",
