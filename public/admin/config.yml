@@ -2,6 +2,7 @@ backend:
   name: github
   repo: selch9876/selcuk-oktay-website
   branch: main
+  auth_type: implicit
 
 media_folder: "public/uploads" # Yüklenen görsellerin gideceği yer
 public_folder: "/uploads"
