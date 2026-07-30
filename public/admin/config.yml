@@ -1,0 +1,35 @@
+backend:
+  name: git-gateway
+  branch: main # varsayılan Git dalı
+
+media_folder: "public/uploads" # Yüklenen görsellerin gideceği yer
+public_folder: "/uploads"
+
+collections:
+  # 1. Konser Takvimi Yönetimi
+  - name: "gigs"
+    label: "Konser Takvimi"
+    folder: "content/gigs"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - { label: "Mekan Adı", name: "venue", widget: "string", default: "Ağaç Ev Kadıköy" }
+      - { label: "Adres/Şehir", name: "address", widget: "string", default: "Osmancık Sk. No:13/B, Kadıköy" }
+      - { label: "Proje / Grup", name: "project", widget: "string", default: "Haluk BB (Rock & Blues)" }
+      - { label: "Tarih (Türkçe)", name: "date_tr", widget: "string", placeholder: "19 Eylül Cumartesi" }
+      - { label: "Tarih (İngilizce)", name: "date_en", widget: "string", placeholder: "Saturday, Sep 19" }
+      - { label: "Saat", name: "time", widget: "string", default: "23:45" }
+      - { label: "Mekan Linki", name: "link", widget: "string", default: "https://agacevbar.com/" }
+
+  # 2. YouTube Videoları Yönetimi
+  - name: "videos"
+    label: "YouTube Videoları"
+    folder: "content/videos"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "YouTube Video ID (v= sonrası)", name: "youtubeId", widget: "string", placeholder: "432RwI4zSIs" }
+      - { label: "Kategori", name: "category", widget: "select", options: ["Rock & Blues", "Gypsy Jazz"] }
+      - { label: "Başlık (İngilizce)", name: "title_en", widget: "string" }
+      - { label: "Başlık (Türkçe)", name: "title_tr", widget: "string" }
+
