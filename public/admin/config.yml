@@ -1,6 +1,7 @@
 backend:
-  name: git-gateway
-  branch: main # varsayılan Git dalı
+  name: github
+  repo: selch9876/selcuk-oktay-website
+  branch: main
 
 media_folder: "public/uploads" # Yüklenen görsellerin gideceği yer
 public_folder: "/uploads"
