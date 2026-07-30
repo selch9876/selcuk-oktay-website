@@ -1,11 +1,6 @@
 [build]
-  command = "npm run generate"
-  publish = "dist"
-
-[[redirects]]
-  from = "/admin"
-  to = "/admin/index.html"
-  status = 200
+  command = "npm run build"
+  publish = ".output/public"
 
 [[redirects]]
   from = "/admin/*"

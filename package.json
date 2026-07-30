@@ -3,12 +3,12 @@
   "type": "module",
   "private": true,
     "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate && node -e \"require('fs').cpSync('public/admin', 'dist/admin', { recursive: true })\"",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
-    },
+  "build": "nuxt build",
+  "dev": "nuxt dev",
+  "generate": "nuxt generate",
+  "preview": "nuxt preview",
+  "postinstall": "nuxt prepare"
+},
   "dependencies": {
     "@nuxtjs/tailwindcss": "^6.14.0",
     "nuxt": "^4.5.1",
