@@ -13,6 +13,7 @@
     "@nuxt/content": "^2.13.0",
     "@nuxtjs/tailwindcss": "^6.12.0",
     "nuxt": "^3.11.0",
+    "nuxt-studio": "^1.7.0",
     "vue": "^3.4.0",
     "vue-router": "^4.3.0"
   },
