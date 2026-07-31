@@ -39,7 +39,7 @@
     />
 
     <footer class="py-10 border-t border-neutral-900 text-center text-xs text-neutral-500">
-      <p>© 2026 Selçuk Oktay. {{ t.footer.rights }}</p>
+      <p>© 2026 Selçuk Oktay. {{ t?.footer?.rights || 'Tüm hakları saklıdır.' }}</p>
     </footer>
 
     <AdminModal 
@@ -70,10 +70,13 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { supabase } from '../utils/supabase'
 
+// Dil Yönetimi
 const currentLang = ref('en')
 const toggleLanguage = () => { currentLang.value = currentLang.value === 'en' ? 'tr' : 'en' }
 
+// Admin State
 const ADMIN_PASSWORD = 'ibanezJem7'
 const showAdminModal = ref(false)
 const isAdmin = ref(false)
@@ -123,52 +126,32 @@ const defaultTranslations = {
 }
 
 const translations = ref({ ...defaultTranslations })
-const t = computed(() => translations.value[currentLang.value])
 
-const updateTranslations = (newTranslations) => {
-  translations.value = newTranslations
-  saveToStorage()
-}
+// Güvenli 't' tanımı (Herhangi bir aksilikte defaultTranslations nesnesine düşer)
+const t = computed(() => {
+  return translations.value[currentLang.value] || defaultTranslations[currentLang.value] || defaultTranslations.en
+})
 
-// Profil Fotoğrafı
+// Default State
 const profileImage = ref('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1000&auto=format&fit=crop')
-
-const updateProfileImage = (newUrl) => {
-  if (!newUrl) return alert('Lütfen geçerli bir görsel adresi giriniz!')
-  profileImage.value = newUrl
-  if (process.client) localStorage.setItem('custom_profile_img', profileImage.value)
-  alert('Profil fotoğrafınız güncellendi!')
-}
-
-// Galeri Fotoğrafları
 const defaultGallery = [
   { id: 1, url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop', caption: 'Live Guitar Performance' },
   { id: 2, url: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?q=80&w=800&auto=format&fit=crop', caption: 'Stage & Atmosphere' },
   { id: 3, url: 'https://images.unsplash.com/photo-1525201548942-d8732f6617a0?q=80&w=800&auto=format&fit=crop', caption: 'Acoustic Gypsy Session' }
 ]
+const defaultVideos = [
+  { id: 1, youtubeId: '432RwI4zSIs', category: 'Rock & Blues', title: { en: 'Haluk BB Project - Live Performance', tr: 'Haluk BB Project - Canlı Sahne Performansı' } },
+  { id: 2, youtubeId: '7t1torWTREc', category: 'Gypsy Jazz', title: { en: 'Gypsy Jazz Trio - Acoustic Swing Session', tr: 'Gypsy Jazz Trio - Akustik Swing Kaydı' } }
+]
+const defaultGigs = [
+  { id: 1, date: { en: 'Saturday, Sep 19, 2026', tr: '19 Eylül 2026 Cumartesi' }, venue: 'Ağaç Ev Kadıköy', address: 'Osmancık Sk. No:13/B, Kadıköy', project: 'Haluk BB (Rock & Blues)', time: '23:45', link: 'https://agacevbar.com/' },
+  { id: 2, date: { en: 'Friday, Oct 16, 2026', tr: '16 Ekim 2026 Cuma' }, venue: 'Ağaç Ev Kadıköy', address: 'Osmancık Sk. No:13/B, Kadıköy', project: 'Haluk BB (Rock & Blues)', time: '21:00', link: 'https://agacevbar.com/' },
+  { id: 3, date: { en: 'Saturday, Nov 07, 2026', tr: '7 Kasım 2026 Cumartesi' }, venue: 'Ağaç Ev Kadıköy', address: 'Osmancık Sk. No:13/B, Kadıköy', project: 'Haluk BB (Rock & Blues)', time: '23:45', link: 'https://agacevbar.com/' }
+]
+
 const galleryPhotos = ref([...defaultGallery])
-
-const addPhoto = (photoData) => {
-  galleryPhotos.value.unshift({
-    id: Date.now(),
-    url: photoData.url,
-    caption: photoData.caption || 'Selçuk Oktay Live'
-  })
-  saveToStorage()
-}
-
-const updatePhoto = (photoData) => {
-  const index = galleryPhotos.value.findIndex(p => p.id === photoData.id)
-  if (index !== -1) {
-    galleryPhotos.value[index] = { ...photoData }
-    saveToStorage()
-  }
-}
-
-const deletePhoto = (id) => {
-  galleryPhotos.value = galleryPhotos.value.filter(p => p.id !== id)
-  saveToStorage()
-}
+const videos = ref([...defaultVideos])
+const gigs = ref([...defaultGigs])
 
 // Tarih Çeviri Fonksiyonu
 const translateDateToEn = (trDate) => {
@@ -176,7 +159,7 @@ const translateDateToEn = (trDate) => {
   let translated = trDate
   const map = {
     'Pazartesi': 'Monday', 'Salı': 'Tuesday', 'Çarşamba': 'Wednesday', 'Perşembe': 'Thursday', 'Cuma': 'Friday', 'Cumartesi': 'Saturday', 'Pazar': 'Sunday',
-    'Ocak': 'Jan', 'Şubat': 'Feb', 'Mart': 'Mar', 'Nisan': 'Apr', 'Mayıs': 'May', 'Haziran': 'Jun', 'Temmuz': 'Jul', 'Ağustos': 'Aug', 'Eylul': 'Sep', 'Eylül': 'Sep', 'Ekim': 'Oct', 'Kasım': 'Nov', 'Aralık': 'Dec'
+    'Ocak': 'Jan', 'Şubat': 'Feb', 'Mart': 'Mar', 'Nisan': 'Apr', 'Mayıs': 'May', 'Haziran': 'Jun', 'Temmuz': 'Jul', 'Ağustos': 'Aug', 'Eylul': 'Sep', 'Eylül': 'Sep', 'Ekim': 'Oct', 'Kasım': 'Nov', 'Aralık': 'Dec'
   }
   Object.keys(map).forEach(key => {
     const reg = new RegExp(key, 'gi')
@@ -192,29 +175,88 @@ const translateDateToEn = (trDate) => {
   return translated
 }
 
-// Konser & Video Verileri
-const defaultVideos = [
-  { id: 1, youtubeId: '432RwI4zSIs', category: 'Rock & Blues', title: { en: 'Haluk BB Project - Live Performance', tr: 'Haluk BB Project - Canlı Sahne Performansı' } },
-  { id: 2, youtubeId: '7t1torWTREc', category: 'Gypsy Jazz', title: { en: 'Gypsy Jazz Trio - Acoustic Swing Session', tr: 'Gypsy Jazz Trio - Akustik Swing Kaydı' } }
-]
+// --- SUPABASE VERİ SERVİSLERİ ---
+const fetchSiteData = async () => {
+  try {
+    const { data, error } = await supabase.from('site_content').select('*')
+    if (error) {
+      console.error('Supabase çekme hatası:', error)
+      return
+    }
 
-const defaultGigs = [
-  { id: 1, date: { en: 'Saturday, Sep 19, 2026', tr: '19 Eylül 2026 Cumartesi' }, venue: 'Ağaç Ev Kadıköy', address: 'Osmancık Sk. No:13/B, Kadıköy', project: 'Haluk BB (Rock & Blues)', time: '23:45', link: 'https://agacevbar.com/' },
-  { id: 2, date: { en: 'Friday, Oct 16, 2026', tr: '16 Ekim 2026 Cuma' }, venue: 'Ağaç Ev Kadıköy', address: 'Osmancık Sk. No:13/B, Kadıköy', project: 'Haluk BB (Rock & Blues)', time: '21:00', link: 'https://agacevbar.com/' },
-  { id: 3, date: { en: 'Saturday, Nov 07, 2026', tr: '7 Kasım 2026 Cumartesi' }, venue: 'Ağaç Ev Kadıköy', address: 'Osmancık Sk. No:13/B, Kadıköy', project: 'Haluk BB (Rock & Blues)', time: '23:45', link: 'https://agacevbar.com/' },
-  { id: 4, date: { en: 'Saturday, Dec 19, 2026', tr: '19 Aralık 2026 Cumartesi' }, venue: 'Ağaç Ev Kadıköy', address: 'Osmancık Sk. No:13/B, Kadıköy', project: 'Haluk BB (Rock & Blues)', time: '23:45', link: 'https://agacevbar.com/' },
-  { id: 5, date: { en: 'Saturday, Jan 16, 2027', tr: '16 Ocak 2027 Cumartesi' }, venue: 'Ağaç Ev Kadıköy', address: 'Osmancık Sk. No:13/B, Kadıköy', project: 'Haluk BB (Rock & Blues)', time: '23:45', link: 'https://agacevbar.com/' },
-  { id: 6, date: { en: 'Saturday, Feb 27, 2027', tr: '27 Şubat 2027 Cumartesi' }, venue: 'Ağaç Ev Kadıköy', address: 'Osmancık Sk. No:13/B, Kadıköy', project: 'Haluk BB (Rock & Blues)', time: '23:45', link: 'https://agacevbar.com/' },
-  { id: 7, date: { en: 'Saturday, Mar 20, 2027', tr: '20 Mart 2027 Cumartesi' }, venue: 'Ağaç Ev Kadıköy', address: 'Osmancık Sk. No:13/B, Kadıköy', project: 'Haluk BB (Rock & Blues)', time: '23:45', link: 'https://agacevbar.com/' },
-  { id: 8, date: { en: 'Saturday, Apr 10, 2027', tr: '10 Nisan 2027 Cumartesi' }, venue: 'Ağaç Ev Kadıköy', address: 'Osmancık Sk. No:13/B, Kadıköy', project: 'Haluk BB (Rock & Blues)', time: '23:45', link: 'https://agacevbar.com/' },
-  { id: 9, date: { en: 'Saturday, May 15, 2027', tr: '15 Mayıs 2027 Cumartesi' }, venue: 'Ağaç Ev Kadıköy', address: 'Osmancık Sk. No:13/B, Kadıköy', project: 'Haluk BB (Rock & Blues)', time: '23:45', link: 'https://agacevbar.com/' },
-  { id: 10, date: { en: 'Saturday, Jun 12, 2027', tr: '12 Haziran 2027 Cumartesi' }, venue: 'Ağaç Ev Kadıköy', address: 'Osmancık Sk. No:13/B, Kadıköy', project: 'Haluk BB (Rock & Blues)', time: '23:45', link: 'https://agacevbar.com/' }
-]
+    if (data && data.length > 0) {
+      data.forEach(item => {
+        if (item.key === 'profile_image' && item.data?.url) profileImage.value = item.data.url
+        if (item.key === 'gallery_photos' && Array.isArray(item.data)) galleryPhotos.value = item.data
+        if (item.key === 'gigs' && Array.isArray(item.data)) gigs.value = item.data
+        if (item.key === 'videos' && Array.isArray(item.data)) videos.value = item.data
+        if (item.key === 'translations' && item.data) translations.value = item.data
+      })
+    }
+  } catch (err) {
+    console.error('Veritabanına bağlanılamadı:', err)
+  }
+}
 
-const videos = ref([...defaultVideos])
-const gigs = ref([...defaultGigs])
+const saveToSupabase = async (key, contentData) => {
+  try {
+    const { data, error } = await supabase
+      .from('site_content')
+      .upsert(
+        { key: key, data: contentData }, 
+        { onConflict: 'key' }
+      )
 
-const addGig = (gigData) => {
+    if (error) {
+      console.error(`Supabase ${key} kaydetme hatası:`, error.message)
+      alert(`Hata: ${error.message}`)
+    } else {
+      console.log(`${key} başarıyla veritabanına yazıldı!`)
+    }
+  } catch (err) {
+    console.error('Kaydetme hatası:', err)
+  }
+}
+
+// Actions
+const updateTranslations = async (newTranslations) => {
+  translations.value = newTranslations
+  await saveToSupabase('translations', translations.value)
+}
+
+const updateProfileImage = async (newUrl) => {
+  if (!newUrl) return alert('Lütfen geçerli bir görsel adresi giriniz!')
+  const cleanUrl = newUrl.split('?')[0]
+  profileImage.value = `${cleanUrl}?v=${Date.now()}`
+  await saveToSupabase('profile_image', { url: profileImage.value })
+  alert('Profil fotoğrafınız veritabanında güncellendi!')
+}
+
+const addPhoto = async (photoData) => {
+  const cleanUrl = photoData.url.split('?')[0]
+  galleryPhotos.value.unshift({
+    id: Date.now(),
+    url: `${cleanUrl}?v=${Date.now()}`,
+    caption: photoData.caption || 'Selçuk Oktay Live'
+  })
+  await saveToSupabase('gallery_photos', galleryPhotos.value)
+}
+
+const updatePhoto = async (photoData) => {
+  const index = galleryPhotos.value.findIndex(p => p.id === photoData.id)
+  if (index !== -1) {
+    const cleanUrl = photoData.url.split('?')[0]
+    galleryPhotos.value[index] = { ...photoData, url: `${cleanUrl}?v=${Date.now()}` }
+    await saveToSupabase('gallery_photos', galleryPhotos.value)
+  }
+}
+
+const deletePhoto = async (id) => {
+  galleryPhotos.value = galleryPhotos.value.filter(p => p.id !== id)
+  await saveToSupabase('gallery_photos', galleryPhotos.value)
+}
+
+const addGig = async (gigData) => {
   const calculatedEnDate = translateDateToEn(gigData.dateTr)
   gigs.value.unshift({
     id: Date.now(),
@@ -225,10 +267,10 @@ const addGig = (gigData) => {
     time: gigData.time,
     link: 'https://agacevbar.com/'
   })
-  saveToStorage()
+  await saveToSupabase('gigs', gigs.value)
 }
 
-const updateGig = (gigData) => {
+const updateGig = async (gigData) => {
   const index = gigs.value.findIndex(g => g.id === gigData.id)
   if (index !== -1) {
     const calculatedEnDate = translateDateToEn(gigData.dateTr)
@@ -238,26 +280,26 @@ const updateGig = (gigData) => {
       venue: gigData.venue,
       time: gigData.time
     }
-    saveToStorage()
+    await saveToSupabase('gigs', gigs.value)
   }
 }
 
-const deleteGig = (id) => {
+const deleteGig = async (id) => {
   gigs.value = gigs.value.filter(g => g.id !== id)
-  saveToStorage()
+  await saveToSupabase('gigs', gigs.value)
 }
 
-const addVideo = (videoData) => {
+const addVideo = async (videoData) => {
   videos.value.unshift({
     id: Date.now(),
     youtubeId: videoData.youtubeId,
     category: videoData.category,
     title: { en: videoData.title, tr: videoData.title }
   })
-  saveToStorage()
+  await saveToSupabase('videos', videos.value)
 }
 
-const updateVideo = (videoData) => {
+const updateVideo = async (videoData) => {
   const index = videos.value.findIndex(v => v.id === videoData.id)
   if (index !== -1) {
     videos.value[index] = {
@@ -266,40 +308,22 @@ const updateVideo = (videoData) => {
       category: videoData.category,
       title: { en: videoData.title, tr: videoData.title }
     }
-    saveToStorage()
+    await saveToSupabase('videos', videos.value)
   }
 }
 
-const deleteVideo = (id) => {
+const deleteVideo = async (id) => {
   videos.value = videos.value.filter(v => v.id !== id)
-  saveToStorage()
+  await saveToSupabase('videos', videos.value)
 }
 
-const saveToStorage = () => {
-  if (process.client) {
-    localStorage.setItem('custom_gigs', JSON.stringify(gigs.value))
-    localStorage.setItem('custom_videos', JSON.stringify(videos.value))
-    localStorage.setItem('custom_gallery', JSON.stringify(galleryPhotos.value))
-    localStorage.setItem('custom_translations', JSON.stringify(translations.value))
-  }
-}
-
+// Lifecycle Hooks
 onMounted(() => {
   if (process.client) {
     window.addEventListener('keydown', handleKeyDown)
     if (localStorage.getItem('admin_logged') === 'true') isAdmin.value = true
-    const savedGigs = localStorage.getItem('custom_gigs')
-    const savedVideos = localStorage.getItem('custom_videos')
-    const savedGallery = localStorage.getItem('custom_gallery')
-    const savedProfileImg = localStorage.getItem('custom_profile_img')
-    const savedTranslations = localStorage.getItem('custom_translations')
-
-    if (savedGigs) gigs.value = JSON.parse(savedGigs)
-    if (savedVideos) videos.value = JSON.parse(savedVideos)
-    if (savedGallery) galleryPhotos.value = JSON.parse(savedGallery)
-    if (savedProfileImg) profileImage.value = savedProfileImg
-    if (savedTranslations) translations.value = JSON.parse(savedTranslations)
   }
+  fetchSiteData()
 })
 
 onUnmounted(() => {

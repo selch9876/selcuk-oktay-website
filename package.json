@@ -12,6 +12,7 @@
   "dependencies": {
     "@nuxt/content": "^2.13.0",
     "@nuxtjs/tailwindcss": "^6.12.0",
+    "@supabase/supabase-js": "^2.111.0",
     "nuxt": "^3.11.0",
     "nuxt-studio": "^1.7.0",
     "vue": "^3.4.0",
