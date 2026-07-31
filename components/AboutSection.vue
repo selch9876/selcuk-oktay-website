@@ -6,6 +6,7 @@
       <div class="md:col-span-5 space-y-6">
         <div class="relative group rounded-2xl overflow-hidden border border-neutral-800 bg-neutral-900 shadow-2xl">
           <img 
+            :key="profileImage"
             :src="profileImage" 
             alt="Selçuk Oktay" 
             class="w-full h-80 sm:h-96 object-cover object-center group-hover:scale-105 transition duration-500" 
